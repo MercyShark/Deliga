@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from apps.user_profile.models import UserProfile
 from .models import User
 
 
@@ -27,8 +28,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
-
+        user = User.objects.create_user(**validated_data)
+        UserProfile.objects.create(user = user)
+        return user
 
 class UserLoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
@@ -46,6 +48,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
         }
     }
 
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id','email','full_name','username','date_of_birth')
 
 class UserChangePasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
@@ -69,13 +75,13 @@ class UserChangePasswordSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class UserCheckEmailSerializer(serializers.ModelSerializer):
+class UserCheckEmailAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email',)
 
 
-class UserCheckUsernameSerializer(serializers.ModelSerializer):
+class UserCheckUsernameAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username',)

@@ -68,3 +68,4 @@ venv.bak/
 # by user
 frontend/social/node_modules/
 backend/env
+backend/Deliga/media

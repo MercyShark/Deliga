@@ -5,14 +5,16 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth import authenticate
+
+
 from .serializers import  (UserRegistrationSerializer ,
                             UserLoginSerializer,
                             UserChangePasswordSerializer,
-                            UserCheckEmailSerializer,
-                            UserCheckUsernameSerializer)
+                            UserInfoSerializer,
+                            UserCheckEmailAvailabilitySerializer,
+                            UserCheckUsernameAvailabilitySerializer)
 
 from .renderes import UserRenderer
-
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -47,6 +49,17 @@ class UserLoginView(APIView):
                 return Response({'errors' : 'Invalid username or password!'})
         return Response(serializer.errors)
 
+class UserInfoView(APIView):
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [UserRenderer]
+
+    def get(self,request,format=None):
+        print('helo')
+        print(request.user)
+        serializer = UserInfoSerializer(request.user)
+        print(serializer.data)
+        return Response(serializer.data)
+    
 class UserChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
     renderer_classes = [UserRenderer]
@@ -57,3 +70,24 @@ class UserChangePasswordView(APIView):
         if serializer.is_valid():
             return Response({'message': 'Password Change Successfully!!'},status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+class UserCheckEmailAvailabilityView(APIView):
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [UserRenderer]
+
+    def post(self,request,format=None):
+        serializer = UserCheckEmailAvailabilitySerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({'success' : 'Email does not exists!'},status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
+    
+class UserCheckUsernameAvailabilityView(APIView):
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [UserRenderer]
+
+    def post(self,request,format=None):
+        serializer = UserCheckUsernameAvailabilitySerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({'success' : 'Username does not exists!'},status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
+
